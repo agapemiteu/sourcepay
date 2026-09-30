@@ -2,9 +2,17 @@
 
 **Pay the source.**
 
-Paste anything online that gave you value, and pay the person behind it. No bank details. No signup.
-
 Live: https://sourcepay-flax.vercel.app
+
+## What is SourcePay?
+
+SourcePay makes any public internet identity payable.
+
+Every day people get value from creators online: a video, a post, a tutorial. But paying them back means asking for a bank account, a payment link, or an app they may not use. So most creators never get paid by the people they help.
+
+With SourcePay, you paste the thing that gave you value and pay the person behind it. You never need their bank details, and they don't need an account first. If they are new, they get a claim link, prove the identity is theirs, and receive the payment.
+
+Value should travel back to its source.
 
 ## How it works
 
