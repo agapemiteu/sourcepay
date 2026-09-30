@@ -2,8 +2,6 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "sourcepay",
   "main": "worker.ts",
-  // `wrangler deploy` builds the Next.js app and applies D1 migrations first.
-  "build": { "command": "npx opennextjs-cloudflare build && npx wrangler d1 migrations apply sourcepay --remote" },
   "compatibility_date": "2026-09-26",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
