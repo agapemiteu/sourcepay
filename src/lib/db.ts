@@ -1,39 +1,43 @@
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import postgres from "postgres";
+import { env } from "./env";
 
 type Row = Record<string, any>;
 
-// The parts of the D1 binding this app uses.
-type D1 = {
-  prepare(sql: string): {
-    bind(...params: unknown[]): {
-      all<T>(): Promise<{ results: T[] }>;
-      first<T>(): Promise<T | null>;
-      run(): Promise<{ meta: { changes: number } }>;
-    };
-  };
-};
+let client: postgres.Sql | undefined;
 
-function database(): D1 {
-  return (getCloudflareContext().env as unknown as { DB: D1 }).DB;
+// Supabase transaction pooler (port 6543) needs prepare: false. Bigint IDs are parsed as numbers.
+function sql(): postgres.Sql {
+  client ??= postgres(env("DATABASE_URL"), {
+    prepare: false,
+    max: 1,
+    types: { bigint: { to: 20, from: [20], serialize: (value: number) => String(value), parse: (value: string) => Number(value) } },
+  });
+  return client;
 }
 
-export async function all<T = Row>(sql: string, ...params: unknown[]): Promise<T[]> {
-  return (await database().prepare(sql).bind(...params).all<T>()).results;
+// Queries use ? placeholders.
+function query(text: string, params: unknown[]) {
+  let index = 0;
+  return sql().unsafe(text.replace(/\?/g, () => `$${++index}`), params as any[]);
 }
 
-export async function first<T = Row>(sql: string, ...params: unknown[]): Promise<T | null> {
-  return database().prepare(sql).bind(...params).first<T>();
+export async function all<T = Row>(text: string, ...params: unknown[]): Promise<T[]> {
+  return [...await query(text, params)] as T[];
 }
 
-export async function one<T = Row>(sql: string, ...params: unknown[]): Promise<T> {
-  const row = await first<T>(sql, ...params);
+export async function first<T = Row>(text: string, ...params: unknown[]): Promise<T | null> {
+  return (await all<T>(text, ...params))[0] ?? null;
+}
+
+export async function one<T = Row>(text: string, ...params: unknown[]): Promise<T> {
+  const row = await first<T>(text, ...params);
   if (!row) throw new Error("Record not found");
   return row;
 }
 
 /** Returns the number of rows changed, so conditional updates can act as locks. */
-export async function run(sql: string, ...params: unknown[]): Promise<number> {
-  return (await database().prepare(sql).bind(...params).run()).meta.changes;
+export async function run(text: string, ...params: unknown[]): Promise<number> {
+  return (await query(text, params)).count;
 }
 
 export function now(): string {

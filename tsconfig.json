@@ -36,8 +36,6 @@
     "**/*.tsx"
   ],
   "exclude": [
-    "node_modules",
-    "worker.ts",
-    ".open-next"
+    "node_modules"
   ]
 }
