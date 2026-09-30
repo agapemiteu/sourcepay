@@ -60,6 +60,7 @@ export const flutterwave: PaymentProvider = {
         customer: { email: input.email },
         subaccounts: [{ id: input.subaccount }],
         meta: input.metadata,
+        customizations: { title: "SourcePay", description: "Pay the source" },
       }),
     });
     if (!checkout.link) throw new Error("Flutterwave did not return a checkout link.");
