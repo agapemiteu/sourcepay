@@ -7,4 +7,9 @@ export const nomba: PaymentProvider = {
   createDestination: async () => { throw new Error("NOT_ENABLED"); },
   initialize: async () => { throw new Error("NOT_ENABLED"); },
   verify: async () => { throw new Error("NOT_ENABLED"); },
+  createBeneficiary: async () => { throw new Error("NOT_ENABLED"); },
+  transfer: async () => { throw new Error("NOT_ENABLED"); },
+  findTransfer: async () => { throw new Error("NOT_ENABLED"); },
+  refund: async () => { throw new Error("NOT_ENABLED"); },
+  findRefund: async () => { throw new Error("NOT_ENABLED"); },
 };

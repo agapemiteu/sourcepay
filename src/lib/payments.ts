@@ -21,8 +21,13 @@ export interface PaymentProvider {
   listBanks(): Promise<{ name: string; code: string }[]>;
   resolveBank(bankCode: string, accountNumber: string): Promise<{ account_name: string; account_number: string }>;
   createDestination(name: string, bankCode: string, accountNumber: string, phone: string): Promise<{ subaccount_code: string }>;
-  initialize(input: { email: string; amount: number; reference: string; subaccount: string; callbackUrl: string; metadata: Record<string, unknown> }): Promise<{ authorization_url: string }>;
-  verify(reference: string): Promise<{ status: string; amount: number; currency: string; reference: string }>;
+  initialize(input: { email: string; amount: number; reference: string; subaccount?: string; callbackUrl: string; metadata: Record<string, unknown> }): Promise<{ authorization_url: string }>;
+  verify(reference: string): Promise<{ id: number; status: string; amount: number; amountSettled: number; currency: string; reference: string }>;
+  createBeneficiary(bankCode: string, accountNumber: string, name: string, bankName: string): Promise<{ id: number }>;
+  transfer(beneficiary: number, amount: number, reference: string): Promise<{ id: number; status: string; reference: string }>;
+  findTransfer(reference: string): Promise<{ id: number; status: string; reference: string } | null>;
+  refund(transactionId: number, amount: number): Promise<{ id: number; status: string }>;
+  findRefund(transactionId: number): Promise<{ id: number; status: string } | null>;
 }
 
 export const flutterwave: PaymentProvider = {
@@ -58,7 +63,7 @@ export const flutterwave: PaymentProvider = {
         currency: "NGN",
         redirect_url: input.callbackUrl,
         customer: { email: input.email },
-        subaccounts: [{ id: input.subaccount }],
+        ...(input.subaccount ? { subaccounts: [{ id: input.subaccount }] } : {}),
         meta: input.metadata,
         customizations: { title: "SourcePay", description: "Pay the source" },
       }),
@@ -67,7 +72,19 @@ export const flutterwave: PaymentProvider = {
     return { authorization_url: checkout.link };
   },
   verify: async (reference) => {
-    const payment = await request<{ status: string; amount: number; currency: string; tx_ref: string }>(`/transactions/verify_by_reference?tx_ref=${encodeURIComponent(reference)}`);
-    return { status: payment.status, amount: payment.amount, currency: payment.currency, reference: payment.tx_ref };
+    const payment = await request<{ id: number; status: string; amount: number; amount_settled: number; currency: string; tx_ref: string }>(`/transactions/verify_by_reference?tx_ref=${encodeURIComponent(reference)}`);
+    return { id: payment.id, status: payment.status, amount: payment.amount, amountSettled: payment.amount_settled, currency: payment.currency, reference: payment.tx_ref };
+  },
+  createBeneficiary: (bankCode, accountNumber, name, bankName) => request("/beneficiaries", { method: "POST", body: JSON.stringify({ account_bank: bankCode, account_number: accountNumber, beneficiary_name: name, bank_name: bankName, currency: "NGN" }) }),
+  transfer: (beneficiary, amount, reference) => request("/transfers", { method: "POST", body: JSON.stringify({ beneficiary, amount: amount / 100, currency: "NGN", reference, narration: "SourcePay creator payment" }) }),
+  findTransfer: async (reference) => {
+    const transfers = await request<{ reference: string; id: number; status: string }[]>(`/transfers?reference=${encodeURIComponent(reference)}`);
+    return transfers.find((item) => item.reference === reference) ?? null;
+  },
+  refund: (transactionId, amount) => request(`/transactions/${transactionId}/refund`, { method: "POST", body: JSON.stringify({ amount: amount / 100, comments: "SourcePay unclaimed source refund" }) }),
+  findRefund: async (transactionId) => {
+    const refunds = await request<{ id: number; transaction_id: number; status: string }[]>(`/refunds?id=${transactionId}`);
+    const refund = refunds.find((item) => item.transaction_id === transactionId);
+    return refund ? { id: refund.id, status: refund.status } : null;
   },
 };

@@ -15,16 +15,6 @@ export type Content = {
   canonical_url: string;
 };
 
-export type Pledge = {
-  id: string;
-  source_id: string;
-  source_content_id: string | null;
-  supporter_email: string | null;
-  amount: number;
-  status: string;
-  expires_at: string;
-};
-
 export type Claim = {
   id: string;
   source_id: string;

@@ -4,6 +4,8 @@ import { env } from "./env";
 
 export function randomToken(): string { return randomBytes(32).toString("base64url"); }
 export function tokenHash(token: string): string { return createHash("sha256").update(token).digest("hex"); }
+export function claimToken(id: string): string { return sign(`claim:${id}`); }
+export function supporterToken(id: string): string { return sign(`supporter:${id}`); }
 
 export function sign(value: string): string {
   const signature = createHmac("sha256", env("CLAIM_TOKEN_SECRET")).update(value).digest("base64url");

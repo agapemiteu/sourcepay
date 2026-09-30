@@ -1,6 +1,6 @@
 import { randomBytes, createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { db, one } from "@/lib/db";
+import { first, one } from "@/lib/db";
 import { env } from "@/lib/env";
 import { errorResponse } from "@/lib/http";
 import { secureCookie, sign, tokenHash } from "@/lib/security";
@@ -9,8 +9,10 @@ export async function POST(request: NextRequest) {
   try {
     const { token } = await request.json();
     if (typeof token !== "string" || token.length > 100) throw new Error("Invalid claim link.");
-    const claim = await one(db().from("claims").select("id,source_id,status,expires_at").eq("token_hash", tokenHash(token)).single());
+    const claim = await one("select id, status, expires_at from claims where token_hash = ?", tokenHash(token));
     if (claim.status !== "STARTED" || Date.parse(claim.expires_at) < Date.now()) throw new Error("This claim link has expired.");
+    const linkedPayment = await first("select status, settlement_status from payments where claim_id = ?", claim.id);
+    if (linkedPayment && (linkedPayment.status !== "SUCCESS" || linkedPayment.settlement_status !== "WAITING_CLAIM")) throw new Error("This payment is not available to claim.");
     const verifier = randomBytes(32).toString("base64url");
     const challenge = createHash("sha256").update(verifier).digest("base64url");
     const nonce = randomBytes(16).toString("base64url");
