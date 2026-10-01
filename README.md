@@ -14,6 +14,16 @@ With SourcePay, you paste the thing that gave you value and pay the person behin
 
 Value should travel back to its source.
 
+## Who we are building for
+
+Independent creators, journalists, educators and indie professionals across Africa. Their work reaches people every day, but getting paid for it is still hard.
+
+- **Most creators earn very little.** About 6 in 10 African creators earn less than $100 a month from their work, and ad revenue makes up only 5.8% of their income. ([Africa Creator Economy Report 2026](https://techpoint.africa/news/africa-creator-economy-report-2026/))
+- **Many people are still outside the financial system.** In Sub-Saharan Africa, account ownership reached 58% of adults in 2024, which still leaves about 4 in 10 without one. Worldwide, 1.3 billion adults remain unbanked. ([World Bank Global Findex 2025](https://www.biia.com/financial-inclusion-at-record-high-but-1-3-billion-still-unbanked-world-bank-global-findex-2025-report))
+- **Independent journalism struggles to fund itself.** Funding is the biggest challenge for independent media startups in the Global South. ([IJNet](https://ijnet.org/en/story/funding-greatest-challenge-media-startups-global-south-report-finds))
+
+SourcePay lets their audience pay them directly, from the work itself, so more of the value they create comes back to them.
+
 ## How it works
 
 1. **Paste** a link or handle.
